@@ -110,6 +110,9 @@ void FModPlayer::Play(std::string file_name)
 
 	result = p_impl->p_system->playSound(p_impl->p_sound, 0, false, &p_impl->p_channel);
 	CHECK_ERRORS(result);
+
+	// Check
+	p_impl->p_channel->setLowPassGain(0.6f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +130,7 @@ void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std:
 
 	FMOD_RESULT result;
 	int sampling_rate = 0;
-	unsigned int sound_lenght = 0;
+	unsigned int sound_length = 0;
 	unsigned int buffer_length = 0;
 
 	FMOD::System* p_system = 0;
@@ -135,6 +138,7 @@ void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std:
 		result = FMOD::System_Create(&p_system);
 		CHECK_ERRORS(result);
 
+		p_system->setSoftwareFormat(44100, FMOD_SPEAKERMODE_DEFAULT, 0);
 		p_system->getSoftwareFormat(&sampling_rate, 0, nullptr);
 		p_system->setOutput(FMOD_OUTPUTTYPE_WAVWRITER_NRT);
 		p_system->init(MAX_CHANNEL, FMOD_INIT_STREAM_FROM_UPDATE, (void*)s_wav_file_name.c_str());
@@ -142,13 +146,10 @@ void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std:
 
 	FMOD::Sound* p_sound = 0;
 	{
-		FMOD_REVERB_PROPERTIES reverb_prop = FMOD_PRESET_AUDITORIUM;
-		p_system->setReverbProperties(0, &reverb_prop);
-
 		result = p_system->createSound(mid_file_name.c_str(), FMOD_DEFAULT, &exinfo, &p_sound);
 		CHECK_ERRORS(result);
 
-		p_sound->getLength(&sound_lenght, FMOD_TIMEUNIT_MS);
+		p_sound->getLength(&sound_length, FMOD_TIMEUNIT_PCM);
 		p_system->getDSPBufferSize(&buffer_length, 0);
 	}
 
@@ -156,13 +157,16 @@ void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std:
 	{
 		result = p_system->playSound(p_sound, 0, false, &p_channel);
 		CHECK_ERRORS(result);
+
+		// Check
+		p_channel->setLowPassGain(0.6f);
 	}
 
-	double index = 0;
-	while (index < sound_lenght)
+	int remained = int(sound_length);
+	while (remained > 0)
 	{
 		result = p_system->update();
-		index += ((double)buffer_length / (double)sampling_rate) * 1000;
+		remained -= buffer_length;
 	}
 
 	p_sound->release();
