@@ -18,6 +18,6 @@ private:
 	Impl* p_impl;
 };
 
-void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std::string wav_file_name);
+void ConvertMidiToWav(std::string mid_file_name, std::string wav_file_name, std::string dls_file_name = "");
 
 #endif

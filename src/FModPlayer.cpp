@@ -1,6 +1,11 @@
 
 #pragma once
+
+#if defined(_WIN64)
 #pragma comment(lib, "fmod64_vc.lib")
+#else
+#pragma comment(lib, "fmod_vc.lib")
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -117,7 +122,7 @@ void FModPlayer::Play(std::string file_name)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std::string wav_file_name)
+void ConvertMidiToWav(std::string mid_file_name, std::string wav_file_name, std::string dls_file_name)
 {
 	static std::string s_mid_file_name = mid_file_name;
 	static std::string s_dls_file_name = dls_file_name;
@@ -126,14 +131,16 @@ void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std:
 	FMOD_CREATESOUNDEXINFO exinfo;
 	memset(&exinfo, 0, sizeof(exinfo));
 	exinfo.cbsize = sizeof(exinfo);
-	exinfo.dlsname = s_dls_file_name.c_str();
+
+	if (!s_dls_file_name.empty())
+		exinfo.dlsname = s_dls_file_name.c_str();
 
 	FMOD_RESULT result;
 	int sampling_rate = 0;
 	unsigned int sound_length = 0;
 	unsigned int buffer_length = 0;
 
-	FMOD::System* p_system = 0;
+	FMOD::System* p_system = nullptr;
 	{
 		result = FMOD::System_Create(&p_system);
 		CHECK_ERRORS(result);
@@ -144,7 +151,7 @@ void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std:
 		p_system->init(MAX_CHANNEL, FMOD_INIT_STREAM_FROM_UPDATE, (void*)s_wav_file_name.c_str());
 	}
 
-	FMOD::Sound* p_sound = 0;
+	FMOD::Sound* p_sound = nullptr;
 	{
 		result = p_system->createSound(mid_file_name.c_str(), FMOD_DEFAULT, &exinfo, &p_sound);
 		CHECK_ERRORS(result);
@@ -153,13 +160,14 @@ void ConvertMidiToWav(std::string mid_file_name, std::string dls_file_name, std:
 		p_system->getDSPBufferSize(&buffer_length, 0);
 	}
 
-	FMOD::Channel* p_channel = 0;
+	FMOD::Channel* p_channel = nullptr;
 	{
 		result = p_system->playSound(p_sound, 0, false, &p_channel);
 		CHECK_ERRORS(result);
 
 		// Check
 		p_channel->setLowPassGain(0.6f);
+		p_channel->setVolume(0.8);
 	}
 
 	int remained = int(sound_length);

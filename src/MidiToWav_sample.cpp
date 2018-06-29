@@ -4,7 +4,7 @@
 int main()
 {
 #if 1
-	ConvertMidiToWav("Res/Level42_SomethingAboutYou.mid", "Res/8Rock11_DLS1.dls", "DLS_Level42_SomethingAboutYou.wav");
+	ConvertMidiToWav("Res/Level42_SomethingAboutYou.mid", "DLS_Level42_SomethingAboutYou.wav", "Res/8Rock11_DLS1.dls");
 
 #else
 	FModPlayer player;
