@@ -124,9 +124,13 @@ void FModPlayer::Play(std::string file_name)
 
 void ConvertMidiToWav(std::string mid_file_name, std::string wav_file_name, std::string dls_file_name)
 {
-	static std::string s_mid_file_name = mid_file_name;
-	static std::string s_dls_file_name = dls_file_name;
-	static std::string s_wav_file_name = wav_file_name;
+	static std::string s_mid_file_name;
+	static std::string s_dls_file_name;
+	static std::string s_wav_file_name;
+
+	s_mid_file_name = mid_file_name;
+	s_dls_file_name = dls_file_name;
+	s_wav_file_name = wav_file_name;
 
 	FMOD_CREATESOUNDEXINFO exinfo;
 	memset(&exinfo, 0, sizeof(exinfo));
